@@ -361,27 +361,21 @@ function gcalTimeBusy(ds){
 // public-data.json 로딩 성공 시에만 가능/불가 표시
 // 로딩 실패 또는 데이터 없으면 → 문의 안내 반환 (기본 요일표 절대 사용 안 함)
 function getMaydlySlots(ds){
-  const UNAVAIL=[{avail:false,allDayBlock:true,label:'종일 외부 촬영 일정으로 인한 예약 불가'}];
-  const NO_DATA=[{avail:false,allDayBlock:false,noData:true,label:'현재 일정 확인이 필요합니다'}];
-
-  // 데이터 미로딩 상태 → 문의 안내만
-  if(!dataLoaded) return NO_DATA;
-
-  // public-data.json에서 해당 날짜 데이터 조회
-  if(publicSchedule&&publicSchedule[ds]!==undefined){
-    const pd=publicSchedule[ds];
-    if(pd.unavailable) return UNAVAIL;
-    if(pd.slots){
-      return pd.slots.map(s=>({
-        avail:s.avail,allDayBlock:false,
-        label:`${s.s} ~ ${s.e}`,
-        s:parseInt(s.s),e:parseInt(s.e)
-      }));
-    }
-  }
-
-  // public-data.json에 해당 날짜 없으면 → 문의 안내 (요일 폴백 없음)
-  return NO_DATA;
+const UNAVAIL=[{avail:false,allDayBlock:true,label:'종일 외부 촬영 일정으로 인한 예약 불가'}];
+const dow=parseDS(ds).getDay();
+const isWeekend=(dow===0||dow===6);
+const DEFAULT_SLOTS=isWeekend
+  ?[{avail:true,allDayBlock:false,label:'11:00 ~ 13:00'},{avail:true,allDayBlock:false,label:'14:00 ~ 16:00'},{avail:true,allDayBlock:false,label:'17:00 ~ 19:00'},{avail:true,allDayBlock:false,label:'20:00 ~ 22:00'}]
+  :[{avail:true,allDayBlock:false,label:'14:00 ~ 16:00'},{avail:true,allDayBlock:false,label:'17:00 ~ 19:00'},{avail:true,allDayBlock:false,label:'20:00 ~ 22:00'}];
+if(!dataLoaded) return DEFAULT_SLOTS;
+if(publicSchedule&&publicSchedule[ds]!==undefined){
+const pd=publicSchedule[ds];
+if(pd.unavailable) return UNAVAIL;
+if(pd.slots){
+return pd.slots.map(s=>({avail:s.avail,allDayBlock:false,label:s.s+' ~ '+s.e}));
+}
+}
+return DEFAULT_SLOTS;
 }
 
 // ── 캘린더 상태 ──
