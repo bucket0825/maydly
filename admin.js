@@ -85,7 +85,10 @@ function dayCell(ds,dn,dim,today){
   }
   var nc=dow===0?"day-num sun":dow===6?"day-num sat":"day-num";
   var cc="day-cell"+(dim?" dim":"")+(isT?" today":"");
-  return '<div class="'+cc+'" onclick="openSheet(\'"+ds+"\')">'+'<div class="'+nc+'">'+dn+'</div><div class="day-chips">'+chips+'</div></div>';
+  return '<div class="'+cc+'" onclick="openSheet(\''+ds+'\')">'
+    +'<div class="'+nc+'">'+dn+'</div>'
+    +'<div class="day-chips">'+chips+'</div>'
+    +'</div>';
 }
 function openSheet(ds){
   editDs=ds;
