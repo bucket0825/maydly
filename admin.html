@@ -1,253 +1,275 @@
+<!-- 관리자 전용 파일 - 일반 공개 금지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>maydly 관리자</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>maydly — 관리자</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+*{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#f2f4f0;--sf:#fff;--sf2:#f7f9f6;
-  --bd:#e0e8de;--bd2:#c8d8c4;
-  --tx:#1e2e1e;--mu:#6a8a6a;--mu2:#4a6a4a;
-  --R:#5ab87a;--Rd:#3a9a5a;--Rl:rgba(90,184,122,.12);
-  --ng:#e05050;--ng2:rgba(224,80,80,.08);
-  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#fefefe;--bg2:#f7f9f7;--sf:#fff;--sf2:#f5f8f5;--sf3:#eef3ee;
+  --bd:#e2ebe2;--bd2:#cddccd;
+  --tx:#2a3a2a;--mu:#7a9a7a;--mu2:#5a7a5a;
+  --R:#7ab87a;--Rl:rgba(122,184,122,.1);--Rd:#5a9a5a;
+  --ok:#6ab87a;--wait:#c8a456;--ng:#c86060;
+  --r:8px;
 }
-body{font-family:-apple-system,'Pretendard',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;max-width:480px;margin:0 auto}
-
-/* PIN */
-#pinScreen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:40px}
-.pin-logo{font-family:Georgia,serif;font-style:italic;font-size:28px;color:var(--mu2);letter-spacing:2px}
-.pin-sub{font-size:12px;color:var(--mu);margin-top:-16px}
-.pin-dots{display:flex;gap:12px;margin:8px 0}
-.pin-dot{width:12px;height:12px;border-radius:50%;background:var(--bd2);transition:background .15s}
-.pin-dot.on{background:var(--R)}
-.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:260px}
-.pin-btn{background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:18px;font-size:22px;font-weight:500;color:var(--tx);cursor:pointer;text-align:center}
-.pin-btn:active{background:var(--sf2)}
-.pin-btn.del{font-size:18px;color:var(--mu)}
-.pin-err{font-size:12px;color:var(--ng);height:16px;text-align:center}
-
-/* 헤더 */
-.hdr{position:sticky;top:0;z-index:100;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:52px}
-.hdr-logo{font-family:Georgia,serif;font-style:italic;font-size:17px;color:var(--mu2);letter-spacing:1px}
-.hdr-badge{font-size:10px;background:var(--Rl);color:var(--Rd);padding:2px 8px;border-radius:10px;font-weight:700}
-.sync-btn{background:var(--R);border:none;border-radius:10px;color:#fff;font-size:12px;font-weight:700;padding:7px 14px;cursor:pointer}
-.sync-btn.loading{background:var(--bd2);color:var(--mu)}
-
-/* 월 네비 */
-.mon-nav{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px}
-.mon-label{font-size:18px;font-weight:700;color:var(--tx)}
-.mon-arrow{background:var(--sf);border:1px solid var(--bd);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--mu2)}
-
-/* 캘린더 — 타임트리 스타일 */
-.cal-wrap{padding:0 8px 12px}
-.dow-hdr{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px}
-.dow-lbl{text-align:center;font-size:10px;color:var(--mu);font-weight:700;padding:4px 0}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--bd)}
-.day-cell{background:var(--sf);padding:4px 3px 6px;min-height:80px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
-.day-cell:active{background:var(--sf2)}
-.day-cell.dim{background:#f8f9f8}
-.day-cell.dim .day-num{opacity:.3}
-.day-cell.today .day-num{background:var(--R);color:#fff;border-radius:50%}
-.day-num{font-size:11px;font-weight:600;color:var(--tx);width:20px;height:20px;display:flex;align-items:center;justify-content:center;margin-bottom:1px}
-.day-num.sun{color:#e05050}
-.day-num.sat{color:#5080e0}
-.day-evs{display:flex;flex-direction:column;gap:2px;flex:1}
-
-/* 이벤트 칩 - 타임트리 스타일 */
-.ev-allday{font-size:8px;font-weight:700;padding:2px 5px;border-radius:3px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ev-slot{font-size:8px;padding:2px 4px;border-radius:3px;display:flex;align-items:center;gap:2px;overflow:hidden}
-.ev-time{color:var(--mu);font-size:7px;flex-shrink:0}
-.ev-title{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ev-blocked{background:rgba(224,80,80,.08);border-left:3px solid #e05050}
-
-/* 시트 */
-.sheet-bg{position:fixed;inset:0;background:rgba(20,30,20,.4);z-index:200;display:none;backdrop-filter:blur(2px)}
-.sheet-bg.on{display:block}
-.sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--sf);border-radius:20px 20px 0 0;z-index:201;padding:0 0 calc(20px + var(--safe-bottom));max-height:92vh;overflow-y:auto}
-.sheet-handle{width:36px;height:4px;background:var(--bd2);border-radius:2px;margin:12px auto 16px}
-.sheet-title{font-size:16px;font-weight:700;padding:0 20px 14px;border-bottom:1px solid var(--bd)}
-.sheet-date{font-size:12px;color:var(--mu);font-weight:400;margin-left:8px}
-
-/* 종일 불가 토글 */
-.unavail-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--bd)}
-.unavail-label span:first-child{font-size:14px;font-weight:600;color:var(--tx);display:block}
-.unavail-label span:last-child{font-size:11px;color:var(--mu);display:block;margin-top:2px}
-.toggle{width:48px;height:28px;border-radius:14px;background:var(--bd2);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
-.toggle.on{background:var(--ng)}
-.toggle::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
-.toggle.on::after{transform:translateX(20px)}
-
-/* 종일 불가 제목/라벨 */
-#unavailExtra{padding:12px 20px 0;border-bottom:1px solid var(--bd)}
-.field-label{font-size:11px;font-weight:700;color:var(--mu);margin-bottom:8px;letter-spacing:.4px}
-.title-input{width:100%;border:1.5px solid var(--bd);border-radius:10px;padding:10px 14px;font-size:15px;color:var(--tx);background:var(--sf);font-family:inherit;margin-bottom:12px}
-.title-input:focus{outline:none;border-color:var(--R)}
-
-/* 슬롯 목록 */
-.slots-section{padding:14px 20px}
-.slot-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--bd);margin-bottom:8px;cursor:pointer;transition:background .1s}
-.slot-item:active{background:var(--sf2)}
-.slot-item-time{font-size:13px;font-weight:700;color:var(--tx);min-width:90px}
-.slot-item-info{flex:1}
-.slot-item-title{font-size:13px;font-weight:600;color:var(--tx)}
-.slot-item-status{font-size:11px;margin-top:1px}
-.slot-item-arrow{font-size:18px;color:var(--bd2)}
-
-/* 슬롯 편집 패널 */
-#slotEditPanel{padding:0 20px;border-top:2px solid var(--R);margin-top:4px}
-.slot-edit-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 0 12px}
-.slot-edit-time{font-size:16px;font-weight:700;color:var(--R)}
-.slot-edit-close{background:none;border:none;font-size:22px;color:var(--mu);cursor:pointer;padding:0}
-.avail-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0 14px;border-bottom:1px solid var(--bd);margin-bottom:14px}
-.avail-row span{font-size:14px;font-weight:600;color:var(--tx)}
-
-/* 라벨 */
-.label-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
-.label-chip{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--bd);cursor:pointer;background:var(--sf)}
-.label-chip.selected{border-width:2px}
-.label-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.label-name{font-size:12px;font-weight:600;color:var(--tx)}
-
-/* 메모 */
-.memo-input{width:100%;border:1.5px solid var(--bd);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--tx);background:var(--sf);resize:none;font-family:inherit;min-height:56px;margin-bottom:14px}
-.memo-input:focus{outline:none;border-color:var(--R)}
-
-/* 버튼행 */
-.save-row{display:flex;gap:10px;padding:4px 0 8px}
-.save-btn{flex:1;background:var(--R);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;padding:14px;cursor:pointer}
-.save-btn:active{background:var(--Rd)}
-.clear-btn{background:var(--sf);border:1.5px solid var(--bd);border-radius:12px;color:var(--mu);font-size:13px;font-weight:600;padding:14px 16px;cursor:pointer}
-.day-save-row{padding:14px 20px 4px;display:flex;gap:10px;border-top:1px solid var(--bd);margin-top:8px}
-
-/* 토스트 */
-.toast{position:fixed;bottom:calc(30px + var(--safe-bottom));left:50%;transform:translateX(-50%);background:var(--tx);color:#fff;padding:10px 22px;border-radius:30px;font-size:12px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400&display=swap');
+body{font-family:-apple-system,'Pretendard','Apple SD Gothic Neo',sans-serif;height:100vh;overflow:hidden;background:var(--bg);color:var(--tx)}
+#landing{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:var(--bg);position:relative;overflow:hidden}
+.land-clover-wrap{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+#app{height:100vh;display:none;flex-direction:column;background:var(--bg)}
+.topnav{display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--bd);background:var(--sf);flex-shrink:0;height:50px;gap:0}
+.tn-logo{font-family:'Noto Serif KR',Georgia,serif;font-weight:300;font-style:italic;font-size:18px;color:var(--mu2);margin-right:20px;letter-spacing:1px;flex-shrink:0}
+.tn-tabs{display:flex;flex:1}
+.tn-tab{padding:0 14px;height:50px;line-height:50px;font-size:11px;font-weight:600;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;letter-spacing:.3px}
+.tn-tab:hover{color:var(--tx)}
+.tn-tab.on{color:var(--Rd);border-bottom-color:var(--R)}
+.tn-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tn-back{background:none;border:1px solid var(--bd);color:var(--mu);padding:5px 12px;border-radius:20px;cursor:pointer;font-size:11px;transition:all .2s}
+.tn-back:hover{border-color:var(--R);color:var(--Rd)}
+.tn-mode{font-size:10px;color:var(--mu);opacity:.7}
+.page{flex:1;overflow:hidden;display:none}
+.page.on{display:flex;flex-direction:column}
+.cal-layout{display:flex;flex:1;overflow:hidden;position:relative}
+.cal-sb{width:190px;flex-shrink:0;background:var(--sf);border-right:1px solid var(--bd);overflow-y:auto;padding:14px 0;transition:width .25s,opacity .25s}
+.cal-sb.collapsed{width:0;overflow:hidden;padding:0;opacity:0}
+.sb-toggle{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:10;width:18px;height:44px;background:var(--sf);border:1px solid var(--bd);border-left:none;border-radius:0 6px 6px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--mu);font-size:10px;transition:left .25s,background .15s}
+.sb-toggle:hover{background:var(--sf2);color:var(--Rd)}
+.cal-body{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.cal-top{padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bd);background:var(--sf);flex-shrink:0}
+.nb{background:var(--sf2);border:1px solid var(--bd);color:var(--tx);padding:4px 9px;border-radius:20px;cursor:pointer;font-size:11px;transition:border-color .15s}
+.nb:hover{border-color:var(--R)}
+.ml{font-size:13px;font-weight:600;min-width:110px;color:var(--tx)}
+.vt{display:flex;gap:2px;background:var(--sf2);border-radius:20px;padding:2px;margin-left:auto}
+.vb{padding:4px 10px;border-radius:18px;border:none;background:none;color:var(--mu);cursor:pointer;font-size:11px;font-weight:600;transition:all .15s}
+.vb.on{background:var(--R);color:#fff}
+.add-b{border:none;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:var(--R);color:#fff;margin-left:4px;transition:background .15s}
+.add-b:hover{background:var(--Rd)}
+.mini-wrap{padding:12px}
+.mini-hd{font-size:10px;color:var(--mu);font-weight:600;margin-bottom:7px;letter-spacing:.3px}
+.mini-g{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.md{text-align:center;font-size:9px;padding:3px 1px;color:var(--mu);cursor:pointer;border-radius:2px}
+.md.hd{font-weight:700;cursor:default}
+.md.td{background:var(--R);color:#fff;border-radius:50%;font-weight:800}
+.md.he{color:var(--tx);font-weight:600}
+.sb-sect{font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--mu);padding:10px 12px 5px;font-weight:700}
+.sb-item{display:flex;align-items:center;gap:7px;padding:4px 12px;font-size:11px;cursor:pointer}
+.sb-item input{width:12px;height:12px;cursor:pointer;accent-color:var(--R)}
+.sb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sb-item span{color:var(--mu2);font-size:11px}
+.legend{padding:10px 12px;border-top:1px solid var(--bd);margin-top:6px}
+.leg-i{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--mu2);margin-bottom:5px}
+.leg-d{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.mg-wrap{flex:1;overflow:hidden;padding:10px;display:flex;flex-direction:column;gap:5px}
+.mg-hdr{display:grid;grid-template-columns:repeat(7,1fr)}
+.dl{text-align:center;font-size:9px;color:var(--mu);font-weight:700;padding:3px 0;letter-spacing:.5px}
+.mg{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;gap:1px;background:var(--bd);border:1px solid var(--bd);border-radius:8px;overflow:hidden;flex:1}
+.mc{background:var(--sf);padding:4px;overflow:hidden;cursor:pointer;min-height:80px;display:flex;flex-direction:column;gap:1px}
+.mc:hover{background:var(--sf2)}
+.mc.dim{opacity:.35;background:var(--bg2)}
+.mc.tdc{background:var(--Rl)}
+.dn{font-size:9px;color:var(--mu);font-weight:600;margin-bottom:2px;flex-shrink:0}
+.tdc .dn{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:var(--R);color:#fff;font-size:8px;font-weight:800}
+.m-bar{font-size:8px;padding:2px 5px;border-radius:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;margin-bottom:2px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;gap:3px}
+.m-bar-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.more-m{font-size:8px;color:var(--mu);padding:1px 4px}
+.avail-slot{font-size:8px;padding:2px 5px;border-radius:10px;font-weight:600;margin-bottom:2px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.tg-wrap{flex:1;overflow:auto;padding:10px;position:relative}
+.tg-inner{position:relative}
+.tg-grid{display:grid;background:var(--bd);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.tg-corner{background:var(--sf2)}
+.tg-dh{background:var(--sf2);padding:8px 5px;text-align:center}
+.tg-dh .wd{font-size:9px;color:var(--mu);font-weight:700}
+.tg-dh .wn{font-size:14px;font-weight:700}
+.tg-dh.td .wn{background:var(--R);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;margin:0 auto}
+.tg-tl{background:var(--sf);padding:3px 6px;font-size:9px;color:var(--mu);text-align:right;border-right:1px solid var(--bd);display:flex;align-items:flex-start;justify-content:flex-end;padding-top:4px}
+.tg-cell{background:var(--sf);border-left:1px solid var(--bd);cursor:pointer}
+.tg-cell:hover{background:var(--sf2)}
+.t-block{position:absolute;border-radius:6px;padding:4px 7px;font-size:9px;font-weight:600;overflow:hidden;cursor:pointer;transition:filter .15s;z-index:1;color:#fff}
+.t-block:hover{filter:brightness(.95)}
+.tb-lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-time{font-size:8px;opacity:.8;margin-top:1px}
+.ov{position:fixed;inset:0;background:rgba(30,40,30,.35);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.pn{background:var(--sf);border:1px solid var(--bd);border-radius:14px;width:440px;max-height:88vh;overflow-y:auto;padding:26px;box-shadow:0 8px 40px rgba(0,0,0,.08)}
+.pn-h{font-size:14px;font-weight:600;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.px{background:none;border:none;color:var(--mu);font-size:20px;cursor:pointer;opacity:.6;transition:opacity .15s}
+.px:hover{opacity:1}
+.fg{margin-bottom:12px}
+.fg label{font-size:9px;color:var(--mu);display:block;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--sf2);border:1px solid var(--bd);color:var(--tx);padding:9px 11px;border-radius:var(--r);font-size:12px;outline:none;font-family:inherit}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--R);background:var(--sf)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sub-btn{width:100%;padding:11px;border:none;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;background:var(--R);color:#fff;margin-top:4px;transition:background .15s}
+.sub-btn:hover{background:var(--Rd)}
+.sub-btn:disabled{opacity:.5;cursor:not-allowed}
+.label-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:4px}
+.label-chip{border-radius:20px;padding:5px 6px;cursor:pointer;font-size:9px;font-weight:700;text-align:center;color:#fff;transition:opacity .15s;border:2px solid transparent;opacity:.6}
+.label-chip:hover{opacity:.85}
+.label-chip.sel{border-color:rgba(0,0,0,.25);opacity:1}
+.badge{padding:2px 9px;border-radius:20px;font-size:9px;font-weight:700;display:inline-block}
+.bOK{background:rgba(106,184,122,.15);color:var(--ok)}
+.bWAIT{background:rgba(200,164,86,.15);color:var(--wait)}
+.det-r{display:flex;gap:8px;font-size:12px;margin-bottom:9px;align-items:flex-start}
+.det-l{color:var(--mu2);font-size:10px;min-width:60px;flex-shrink:0;margin-top:1px}
+.act-row{display:flex;gap:8px;margin-top:14px}
+.btn-ok{background:var(--ok);color:#fff;border:none;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer}
+.btn-ng{background:transparent;color:var(--ng);border:1px solid var(--ng);padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer}
+.btn-del{width:100%;background:none;border:1px solid var(--bd);color:var(--ng);padding:7px;border-radius:20px;cursor:pointer;font-size:11px;margin-top:8px}
+.client-view-box{margin-top:12px;padding:10px 12px;background:var(--sf2);border-radius:var(--r);border-left:2px solid var(--R)}
+.cv-label{font-size:9px;color:var(--mu);font-weight:700;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.cv-val{font-size:11px;color:var(--Rd)}
+.rq-wrap{flex:1;overflow-y:auto;padding:18px}
+.rcard{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:10px}
+.rn{font-size:13px;font-weight:700}
+.rm{font-size:10px;color:var(--mu2);margin-top:3px;line-height:1.6}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:13px}
+.sn{font-size:22px;font-weight:800;color:var(--R)}
+.sl{font-size:10px;color:var(--mu2);margin-top:2px}
+.sect-label{font-size:9px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.import-wrap{flex:1;overflow-y:auto;padding:18px}
+.import-box{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:20px;margin-bottom:16px}
+.import-box h3{font-size:13px;font-weight:700;margin-bottom:8px;color:var(--Rd)}
+.import-box p{font-size:11px;color:var(--mu2);line-height:1.7;margin-bottom:12px}
+.import-box textarea{width:100%;height:140px;background:var(--sf2);border:1px solid var(--bd);color:var(--tx);padding:10px;border-radius:var(--r);font-size:11px;font-family:monospace;outline:none;resize:vertical}
+.import-box textarea:focus{border-color:var(--R)}
+.import-result{margin-top:10px;font-size:11px;padding:8px 12px;border-radius:var(--r);display:none}
+.import-result.ok{background:rgba(106,184,122,.12);color:var(--ok);display:block}
+.import-result.err{background:rgba(200,96,96,.08);color:var(--ng);display:block}
+.storage-bar{padding:10px 12px;border-top:1px solid var(--bd);margin-top:8px}
+.storage-info{font-size:10px;color:var(--mu2);line-height:1.8}
+.storage-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--R);margin-right:4px;vertical-align:middle}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--sf);border:1px solid var(--bd);color:var(--Rd);padding:10px 22px;border-radius:30px;font-size:11px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.08)}
 .toast.on{opacity:1}
+option{background:#fff}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+.login-wrap{display:flex;gap:8px;margin-bottom:12px}
+.login-btn{flex:1;padding:11px;border:1px solid var(--bd);border-radius:var(--r);background:var(--sf2);cursor:pointer;font-size:11px;font-weight:600;color:var(--mu2);transition:all .2s;text-align:center}
+.login-btn:hover,.login-btn.sel{border-color:var(--R);color:var(--Rd);background:var(--Rl)}
 </style>
 </head>
 <body>
-
-<!-- PIN -->
-<div id="pinScreen">
-  <div class="pin-logo">maydly</div>
-  <div class="pin-sub">관리자 로그인</div>
-  <div class="pin-dots">
-    <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
-    <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
-  </div>
-  <div class="pin-err" id="pinErr"></div>
-  <div class="pin-pad">
-    <button class="pin-btn" onclick="pinInput('1')">1</button>
-    <button class="pin-btn" onclick="pinInput('2')">2</button>
-    <button class="pin-btn" onclick="pinInput('3')">3</button>
-    <button class="pin-btn" onclick="pinInput('4')">4</button>
-    <button class="pin-btn" onclick="pinInput('5')">5</button>
-    <button class="pin-btn" onclick="pinInput('6')">6</button>
-    <button class="pin-btn" onclick="pinInput('7')">7</button>
-    <button class="pin-btn" onclick="pinInput('8')">8</button>
-    <button class="pin-btn" onclick="pinInput('9')">9</button>
-    <button class="pin-btn" style="visibility:hidden"></button>
-    <button class="pin-btn" onclick="pinInput('0')">0</button>
-    <button class="pin-btn del" onclick="pinDel()">&#9003;</button>
+<div id="landing">
+  <div class="land-clover-wrap"></div>
+  <div style="text-align:center;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center">
+    <div style="font-size:40px;font-weight:300;color:#3a5a3a;letter-spacing:2px;font-family:Georgia,serif;font-style:italic;line-height:1;margin-bottom:10px">maydly</div>
+    <div style="font-size:10px;color:#b04040;font-weight:600;margin-bottom:16px;padding:5px 14px;border:1px solid #e0c0c0;border-radius:20px;background:#fff8f8">관리자 전용</div>
+    <button onclick="showAdminLogin()" style="display:flex;align-items:center;justify-content:center;gap:10px;background:var(--R);border:none;border-radius:12px;padding:14px 36px;cursor:pointer;font-size:14px;font-weight:700;color:#fff;width:240px;transition:background .15s;box-shadow:0 2px 12px rgba(122,184,122,.3)" onmouseover="this.style.background='var(--Rd)'" onmouseout="this.style.background='var(--R)'">관리자로 시작하기</button>
   </div>
 </div>
-
-<!-- 메인 -->
-<div id="mainApp" style="display:none">
-  <div class="hdr">
-    <div style="display:flex;align-items:center;gap:8px">
-      <div class="hdr-logo">maydly</div>
-      <div class="hdr-badge">관리자</div>
+<div id="app">
+  <div class="topnav">
+    <div class="tn-logo">maydly</div>
+    <div class="tn-tabs" id="tnTabs"></div>
+    <div class="tn-right">
+      <div class="tn-mode" id="tnMode"></div>
+      <button class="tn-back" onclick="goLanding()">← 홈</button>
     </div>
-    <button class="sync-btn" id="syncBtn" onclick="syncToGithub()">&#128190; 저장</button>
   </div>
-
-  <div class="mon-nav">
-    <button class="mon-arrow" onclick="chMonth(-1)">&#8249;</button>
-    <div class="mon-label" id="monLabel"></div>
-    <button class="mon-arrow" onclick="chMonth(1)">&#8250;</button>
-  </div>
-
-  <div class="cal-wrap">
-    <div class="dow-hdr">
-      <div class="dow-lbl" style="color:#e05050">일</div>
-      <div class="dow-lbl">월</div><div class="dow-lbl">화</div>
-      <div class="dow-lbl">수</div><div class="dow-lbl">목</div>
-      <div class="dow-lbl">금</div>
-      <div class="dow-lbl" style="color:#5080e0">토</div>
-    </div>
-    <div class="cal-grid" id="calGrid"></div>
+  <div class="page on" id="pg-cal"></div>
+  <div class="page" id="pg-req"></div>
+  <div class="page" id="pg-import"></div>
+</div>
+<div class="ov" id="ov" style="display:none" onclick="ovClick(event)">
+  <div class="pn" id="pn">
+    <div class="pn-h" id="pnh">-<button class="px" onclick="closeP()">×</button></div>
+    <div id="pb"></div>
   </div>
 </div>
-
-<!-- 시트 배경 -->
-<div class="sheet-bg" id="sheetBg" onclick="closeSheet()"></div>
-
-<!-- 날짜 편집 시트 -->
-<div class="sheet" id="sheet" style="display:none">
-  <div class="sheet-handle"></div>
-  <div class="sheet-title" id="sheetTitle"></div>
-
-  <!-- 종일 불가 -->
-  <div class="unavail-row">
-    <div class="unavail-label">
-      <span>종일 예약 불가</span>
-      <span>휴무 / 외부 촬영 등 하루 전체 불가</span>
-    </div>
-    <div class="toggle" id="unavailToggle" onclick="toggleUnavail()"></div>
-  </div>
-
-  <!-- 종일 불가 제목/라벨 -->
-  <div id="unavailExtra" style="display:none">
-    <div class="field-label">일정 제목</div>
-    <input class="title-input" id="unavailTitle" type="text" placeholder="예: 하이브 상업 촬영, 외부 행사">
-    <div class="field-label">라벨</div>
-    <div class="label-grid" id="unavailLabelGrid"></div>
-  </div>
-
-  <!-- 타임 슬롯 목록 -->
-  <div class="slots-section" id="slotsSection">
-    <div class="field-label">타임별 일정</div>
-    <div id="slotRows"></div>
-  </div>
-
-  <!-- 슬롯 편집 패널 -->
-  <div id="slotEditPanel" style="display:none">
-    <div class="slot-edit-hdr">
-      <div class="slot-edit-time" id="slotEditTime"></div>
-      <button class="slot-edit-close" onclick="cancelSlotEdit()">&#10005;</button>
-    </div>
-
-    <div class="field-label">고객명 / 일정 제목</div>
-    <input class="title-input" id="slotTitle" type="text" placeholder="예: 김민정님, 야외 CF 촬영">
-
-    <div class="avail-row">
-      <span>예약 불가 처리</span>
-      <div class="toggle" id="slotAvailToggle" onclick="toggleSlotAvail()"></div>
-    </div>
-
-    <div class="field-label">라벨</div>
-    <div class="label-grid" id="slotLabelGrid"></div>
-
-    <div class="field-label">메모</div>
-    <textarea class="memo-input" id="slotMemo" placeholder="예: 강남 스튜디오, 헤어 포함"></textarea>
-
-    <div class="save-row">
-      <button class="clear-btn" onclick="clearSlotEdit()">초기화</button>
-      <button class="save-btn" onclick="saveSlotEdit()">저장</button>
-    </div>
-  </div>
-
-  <!-- 날짜 전체 저장/초기화 -->
-  <div class="day-save-row">
-    <button class="clear-btn" onclick="clearDay()">하루 초기화</button>
-    <button class="save-btn" onclick="saveDay()">확인</button>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
-<script src="./admin.js?v=5"></script>
+<script>
+function fd(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${dd}`;}
+function parseDS(ds){const[y,m,d]=ds.split('-').map(Number);return new Date(y,m-1,d);}
+function dowOf(ds){return parseDS(ds).getDay();}
+function pad(n){return String(n).padStart(2,'0');}
+function mkd(n){const d=new Date(TODAY);d.setDate(TODAY.getDate()+n);return fd(d);}
+function addH(t,h){const[hh,mm]=t.split(':').map(Number);const tot=hh*60+mm+h*60;return`${pad(Math.floor(tot/60))}:${pad(tot%60)}`;}
+const TODAY=new Date(),TSTR=fd(TODAY);
+const STORAGE_KEY='maydly_events_v2';
+const STORAGE_REQ_KEY='maydly_requests_v2';
+const STORAGE_GCAL_KEY='maydly_gcal_admin_v1';
+const GCAL_MINJIN_KEYWORDS=['명진'];
+const GCAL_CAL_IDS=['dcba34499541fc3f1eed2a55fc82633f0bdc28ca369d81dda4785e7e830bdb45@group.calendar.google.com','9fcd35edcb1b4b433445d0bb1e2d0c5cbb312ca9f87830d0e9b9b2321030b54e@group.calendar.google.com'];
+let gcalEvents=[];
+function loadGcalCache(){try{const raw=sessionStorage.getItem(STORAGE_GCAL_KEY);if(raw){const d=JSON.parse(raw);gcalEvents=d.events||[];}}catch(e){}}
+function saveGcalCache(events){gcalEvents=events;try{sessionStorage.setItem(STORAGE_GCAL_KEY,JSON.stringify({events,at:Date.now()}));}catch(e){}}
+loadGcalCache();
+function nowStr(){return new Date().toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+const LABELS={studio_f:{name:'여스튜디오',color:'#c4607a'},studio_m:{name:'남스튜디오',color:'#4a9a6a'},outdoor:{name:'야외',color:'#4a8abf'},profile:{name:'프로필/페이',color:'#c46a4a'},outdoor_c:{name:'야외상업',color:'#3aaa8a'},pa_shoot:{name:'PA촬영',color:'#8060b0'},rest:{name:'휴무',color:'#b04040'},personal:{name:'개인',color:'#999'},nosh:{name:'노쇼',color:'#444'}};
+const DATA_VERSION='tt_v4';
+const SAMPLE_EVENTS=[];
+function loadEvents(){try{const ver=localStorage.getItem('maydly_data_ver');if(ver===DATA_VERSION){const raw=localStorage.getItem(STORAGE_KEY);if(raw){const d=JSON.parse(raw);if(Array.isArray(d))return d;}}localStorage.clear();const fresh=JSON.parse(JSON.stringify(SAMPLE_EVENTS));localStorage.setItem(STORAGE_KEY,JSON.stringify(fresh));localStorage.setItem('maydly_data_ver',DATA_VERSION);return fresh;}catch(e){}return[];}
+function saveEvents(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(maydlyEvents));lastSaved=nowStr();}catch(e){toast('저장 실패');}}
+function loadRequests(){try{const raw=localStorage.getItem(STORAGE_REQ_KEY);if(raw)return JSON.parse(raw);}catch(e){}return[];}
+function saveRequests(){try{localStorage.setItem(STORAGE_REQ_KEY,JSON.stringify(clientRequests));}catch(e){}}
+let maydlyEvents=loadEvents();
+let clientRequests=loadRequests();
+let nextId=Math.max(0,...maydlyEvents.map(e=>e.id||0),0)+1;
+let lastSaved=nowStr();
+let calView='month',curPage='cal';
+let curDate=new Date(TODAY);
+let sbOpen=true;
+const PX=52,HS=8,HE=22;
+const filters={studio_f:true,studio_m:true,outdoor:true,profile:true,outdoor_c:true,pa_shoot:true,rest:true,personal:true,nosh:true};
+let selAdminUser='mj';
+function showAdminLogin(){
+  document.getElementById('pnh').innerHTML='관리자 확인<button class="px" onclick="closeP()">×</button>';
+  document.getElementById('pb').innerHTML='<div class="login-wrap"><div class="login-btn sel" id="lb-mj" onclick="selAdmin(\'mj\')">👤 김명진</div><div class="login-btn" id="lb-sb" onclick="selAdmin(\'sb\')">👤 수빈</div></div><div class="fg"><label>비밀번호</label><input type="password" id="adminPw" placeholder="••••••••" onkeydown="if(event.key===\'Enter\')doLogin()"></div><button class="sub-btn" onclick="doLogin()">로그인</button><div id="login-err" style="font-size:11px;color:var(--ng);margin-top:8px;display:none">비밀번호가 올바르지 않습니다.</div>';
+  document.getElementById('ov').style.display='flex';
+  setTimeout(()=>document.getElementById('adminPw')?.focus(),100);
+}
+function selAdmin(u){selAdminUser=u;document.getElementById('lb-mj').className='login-btn'+(u==='mj'?' sel':'');document.getElementById('lb-sb').className='login-btn'+(u==='sb'?' sel':'');}
+const PW_HASH='5758f9ae2c9d7a7d08a7ac68af73f7b301cd0f8857ca1c7752b8cd153e040d20';
+async function hashPw(pw){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function doLogin(){const pw=document.getElementById('adminPw').value;const h=await hashPw(pw);if(h===PW_HASH){closeP();enter();}else{document.getElementById('login-err').style.display='block';}}
+async function syncAndExport(btn){const orig=btn?btn.innerHTML:'';if(btn){btn.innerHTML='⏳ 동기화 중...';btn.disabled=true;}try{await syncGcal();const statusEl=document.getElementById('gcalStatus');if(statusEl)statusEl.textContent=gcalEvents.length>0?`✓ ${gcalEvents.length}개 연동됨`:'동기화 완료';exportPublicData();toast('✓ 동기화 완료 — public-data.json 다운로드됨');}catch(e){toast('동기화 실패: '+e.message);}finally{if(btn){btn.innerHTML=orig;btn.disabled=false;}}}
+async function syncGcal(){try{const today=new Date();const start=new Date(today.getFullYear(),today.getMonth()-1,1).toISOString();const end=new Date(today.getFullYear(),today.getMonth()+3,1).toISOString();if(!window.cowork||!window.cowork.callMcpTool)return;const results=await Promise.all(GCAL_CAL_IDS.map(calendarId=>window.cowork.callMcpTool('mcp__0353f32c-2f0c-48a3-9788-097afa406bc9__list_events',{calendarId,startTime:start,endTime:end,pageSize:200})));const events=results.flatMap(r=>(r&&r.events)||[]);const parsed=[];events.forEach(ev=>{const sum=ev.summary||'';if(!GCAL_MINJIN_KEYWORDS.some(k=>sum.includes(k)))return;if(ev.start&&ev.start.date){parsed.push({allDay:true,date:ev.start.date});}else if(ev.start&&ev.start.dateTime){const d=ev.start.dateTime.slice(0,10);const st=ev.start.dateTime.slice(11,16);const et=ev.end.dateTime.slice(11,16);parsed.push({allDay:false,date:d,time:st,endTime:et});}});saveGcalCache(parsed);if(curPage==='cal')renderBody();}catch(e){console.log('gcal sync skip',e);}}
+function enter(){document.getElementById('landing').style.display='none';document.getElementById('app').style.display='flex';buildNav();showPage('cal');syncGcal();}
+function goLanding(){document.getElementById('landing').style.display='flex';document.getElementById('app').style.display='none';}
+function buildNav(){const tabs=document.getElementById('tnTabs');const mode=document.getElementById('tnMode');const pend=maydlyEvents.filter(e=>e.status==='pending').length+clientRequests.length;mode.textContent='관리자 · '+(selAdminUser==='mj'?'김명진':'수빈');tabs.innerHTML=`<div class="tn-tab on" onclick="switchPage('cal',this)">캘린더</div><div class="tn-tab" onclick="switchPage('req',this)">예약 현황${pend?` <span style="background:var(--R);color:#fff;font-size:9px;padding:1px 6px;border-radius:10px;font-weight:800">${pend}</span>`:''}</div><div class="tn-tab" onclick="switchPage('import',this)">가져오기</div>`;}
+function switchPage(pg,el){curPage=pg;document.querySelectorAll('.tn-tab').forEach(t=>t.classList.remove('on'));if(el)el.classList.add('on');showPage(pg);}
+function showPage(pg){['cal','req','import'].forEach(p=>{document.getElementById('pg-'+p).className='page'+(p===pg?' on':'');});if(pg==='cal')renderCal();else if(pg==='req')renderReq();else if(pg==='import')renderImport();}
+function toggleSidebar(){sbOpen=!sbOpen;const sb=document.querySelector('.cal-sb');const btn=document.querySelector('.sb-toggle');if(sb){sb.classList.toggle('collapsed',!sbOpen);}if(btn){btn.style.left=sbOpen?'190px':'0';btn.textContent=sbOpen?'‹':'›';}}
+function buildSidebar(){const saved=`<div class="storage-bar"><div class="storage-info"><span class="storage-dot"></span>자동 저장됨&nbsp;&nbsp;<span style="color:var(--mu);font-size:9px">${lastSaved}</span></div></div>`;return`<div class="mini-wrap"><div class="mini-hd" id="miniHd"></div><div class="mini-g" id="miniG"></div></div><div class="sb-sect">촬영 라벨</div>${Object.entries(LABELS).map(([k,v])=>`<label class="sb-item"><input type="checkbox" ${filters[k]?'checked':''} onchange="toggleF('${k}',this.checked)"><span class="sb-dot" style="background:${v.color}"></span><span>${v.name}</span></label>`).join('')}<div style="padding:10px 12px;border-top:1px solid var(--bd)"><button onclick="syncAndExport(this)" style="width:100%;padding:7px;border:1px solid var(--bd);border-radius:8px;background:var(--sf2);cursor:pointer;font-size:10px;color:var(--mu2);display:flex;align-items:center;justify-content:center;gap:5px">동기화 + 공개 데이터 내보내기</button><div style="font-size:9px;color:var(--mu);margin-top:5px;text-align:center" id="gcalStatus">${gcalEvents.length>0?`✓ ${gcalEvents.length}개 일정 연동됨`:'미동기화'}</div></div>${saved}`;}
+function toggleF(k,v){filters[k]=v;renderBody();}
+function renderCal(){document.getElementById('pg-cal').innerHTML=`<div class="cal-layout"><div class="cal-sb">${buildSidebar()}</div><button class="sb-toggle" onclick="toggleSidebar()" style="left:${sbOpen?190:0}px">${sbOpen?'‹':'›'}</button><div class="cal-body"><div class="cal-top"><button class="nb" onclick="chM(-1)">‹</button><button class="nb" onclick="goT()">오늘</button><button class="nb" onclick="chM(1)">›</button><div class="ml" id="calLabel"></div><div class="vt"><button class="vb on" onclick="setV('month',this)">월</button><button class="vb" onclick="setV('week',this)">주</button><button class="vb" onclick="setV('day',this)">일</button></div><button class="add-b" onclick="openAdd()">+ 일정 추가</button></div><div id="calBody" style="flex:1;overflow:hidden;display:flex;flex-direction:column"></div></div></div>`;updLabel();renderMini();renderBody();}
+function chM(n){if(calView==='day'){curDate.setDate(curDate.getDate()+n);}else if(calView==='week'){curDate.setDate(curDate.getDate()+n*7);}else{curDate.setMonth(curDate.getMonth()+n);}updLabel();renderMini();renderBody();}
+function goT(){curDate=new Date(TODAY);updLabel();renderMini();renderBody();}
+function setV(v,el){calView=v;document.querySelectorAll('.vb').forEach(b=>b.classList.remove('on'));el.classList.add('on');updLabel();renderBody();}
+function updLabel(){const ms=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];const el=document.getElementById('calLabel');if(!el)return;el.textContent=calView==='day'?`${curDate.getFullYear()}.${pad(curDate.getMonth()+1)}.${pad(curDate.getDate())}`:`${curDate.getFullYear()}년 ${ms[curDate.getMonth()]}`;}
+function renderMini(){const y=curDate.getFullYear(),m=curDate.getMonth();const ms=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const hd=document.getElementById('miniHd');if(!hd)return;hd.textContent=`${ms[m]} ${y}`;const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();const evD=new Set(getVis().map(e=>e.date));let h='';['일','월','화','수','목','금','토'].forEach(d=>h+=`<div class="md hd">${d}</div>`);for(let i=0;i<first;i++)h+=`<div class="md"></div>`;for(let d=1;d<=days;d++){const ds=fd(new Date(y,m,d));let cls='md';if(ds===TSTR)cls+=' td';else if(evD.has(ds))cls+=' he';h+=`<div class="${cls}">${d}</div>`;}document.getElementById('miniG').innerHTML=h;}
+function getVis(){return maydlyEvents.filter(e=>filters[e.label]!==false);}
+function renderBody(){calView==='month'?renderMonth():renderTimeGrid();}
+function renderMonth(){const y=curDate.getFullYear(),m=curDate.getMonth();const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),prev=new Date(y,m,0).getDate();let h=`<div class="mg-wrap"><div class="mg-hdr">`;['일','월','화','수','목','금','토'].forEach(d=>h+=`<div class="dl">${d}</div>`);h+=`</div><div class="mg">`;for(let i=0;i<first;i++)h+=mCell(fd(new Date(y,m-1,prev-first+1+i)),prev-first+1+i,true);for(let d=1;d<=days;d++)h+=mCell(fd(new Date(y,m,d)),d,false);const rem=(7-(first+days)%7)%7;for(let d=1;d<=rem;d++)h+=mCell(fd(new Date(y,m+1,d)),d,true);h+=`</div></div>`;document.getElementById('calBody').innerHTML=h;}
+function mCell(ds,dn,dim){const isT=ds===TSTR;const MAX=3;let inner='';const evs=getVis().filter(e=>e.date===ds).sort((a,b)=>(a.time||'').localeCompare(b.time||''));evs.slice(0,MAX).forEach(e=>{const L=LABELS[e.label]||{name:'기타',color:'#999'};const op=e.status==='pending'?'opacity:.6;':'';inner+=`<div class="m-bar" style="background:${L.color}20;${op}" onclick="event.stopPropagation();openD(${e.id})"><span class="m-bar-dot" style="background:${L.color}"></span><span style="color:var(--tx)">${e.time?e.time.slice(0,5)+' ':''}${e.client||L.name}</span></div>`;});if(evs.length>MAX)inner+=`<div class="more-m" onclick="event.stopPropagation();openDay('${ds}')">+${evs.length-MAX}개</div>`;return`<div class="mc${dim?' dim':''}${isT?' tdc':''}" onclick="openDay('${ds}')"><div class="dn">${dn}</div>${inner}</div>`;}
+function renderTimeGrid(){const isDay=calView==='day',cols=isDay?1:7;const days=['일','월','화','수','목','금','토'];let ws=new Date(curDate);if(!isDay)ws.setDate(curDate.getDate()-curDate.getDay());let h=`<div class="tg-wrap"><div class="tg-inner"><div class="tg-grid" style="grid-template-columns:44px repeat(${cols},1fr)"><div class="tg-corner" style="height:38px"></div>${Array.from({length:cols},(_,i)=>{const d=new Date(ws);d.setDate(ws.getDate()+i);const isT=fd(d)===TSTR;return`<div class="tg-dh${isT?' td':''}"><div class="wd">${days[d.getDay()]}</div><div class="wn">${d.getDate()}</div></div>`;}).join('')}${Array.from({length:HE-HS},(_,r)=>{const hr=HS+r;return`<div class="tg-tl" style="height:${PX}px">${hr}:00</div>`+Array.from({length:cols},(_,i)=>{const d=new Date(ws);d.setDate(ws.getDate()+i);return`<div class="tg-cell" style="height:${PX}px" onclick="openDay('${fd(d)}')"></div>`;}).join('');}).join('')}</div></div></div>`;document.getElementById('calBody').innerHTML=h;requestAnimationFrame(()=>placeBlocks(ws,cols));}
+function placeBlocks(ws,cols){const wrap=document.querySelector('.tg-inner');if(!wrap)return;const grid=wrap.querySelector('.tg-grid');const timeW=44,headerH=38;const colW=(grid.getBoundingClientRect().width-timeW)/cols;const vis=getVis();for(let i=0;i<cols;i++){const d=new Date(ws);d.setDate(ws.getDate()+i);const ds=fd(d);vis.filter(e=>e.date===ds&&e.time).forEach(e=>{const[hh,mm]=e.time.split(':').map(Number);if(hh<HS||hh>=HE)return;const L=LABELS[e.label]||{name:'기타',color:'#999'};const top=headerH+(hh-HS)*PX+(mm/60)*PX,height=e.dur*PX-2;const op=e.status==='pending'?'opacity:.7;':'';const el=document.createElement('div');el.className='t-block';el.style.cssText=`top:${top}px;left:${timeW+i*colW+2}px;width:${colW-4}px;height:${height}px;background:${L.color};pointer-events:auto;${op}`;el.innerHTML=`<div class="tb-lbl">${e.client||L.name}</div>${height>28?`<div class="tb-time">${e.time} – ${addH(e.time,e.dur)}</div>`:''})`;el.onclick=ev=>{ev.stopPropagation();openD(e.id);};wrap.appendChild(el);});}}
+function openDay(ds){const evs=getVis().filter(e=>e.date===ds);if(evs.length===1)openD(evs[0].id);else openAdd(ds);}
+function openD(id){const e=maydlyEvents.find(x=>x.id===id);if(!e)return;const L=LABELS[e.label]||{name:'기타',color:'#999'};document.getElementById('pnh').innerHTML=`${e.client||L.name}<button class="px" onclick="closeP()">×</button>`;const stb=e.status==='confirmed'?`<span class="badge bOK">확정</span>`:`<span class="badge bWAIT">대기</span>`;let b=`<div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center">${stb}<span style="background:${L.color};color:#fff;font-size:9px;font-weight:700;padding:2px 9px;border-radius:20px">${L.name}</span></div>`;b+=`<div class="det-r"><span class="det-l">📅 날짜</span>${e.date}</div>`;if(e.time)b+=`<div class="det-r"><span class="det-l">🕐 시간</span>${e.time} – ${addH(e.time,e.dur)} (${e.dur}시간)</div>`;if(e.client)b+=`<div class="det-r"><span class="det-l">👤 고객</span>${e.client}</div>`;if(e.phone)b+=`<div class="det-r"><span class="det-l">📞 연락처</span>${e.phone}</div>`;if(e.note)b+=`<div class="det-r"><span class="det-l">📝 메모</span>${e.note}</div>`;if(e.status==='pending')b+=`<div class="act-row"><button class="btn-ok" onclick="confEv(${e.id});closeP()">✓ 확정</button><button class="btn-ng" onclick="rejEv(${e.id});closeP()">✕ 거절</button></div>`;b+=`<button class="btn-del" onclick="delEv(${e.id})">삭제</button>`;document.getElementById('pb').innerHTML=b;openP();}
+function gcalAllDay(ds){return gcalEvents.some(e=>e.allDay&&e.date===ds);}
+function gcalTimeBusy(ds){return gcalEvents.filter(e=>!e.allDay&&e.date===ds).map(e=>{const[sh,sm]=e.time.split(':').map(Number);const[eh,em]=e.endTime.split(':').map(Number);return{s:sh+sm/60,e:eh+em/60};});}
+function getMaydlySlots(ds,busyEvs){const dow=dowOf(ds);if(dow===1||dow===2||dow===5||dow===6){return[{avail:false,allDayBlock:true,label:'종일 외부 촬영 일정으로 인한 예약 불가',s:9,e:21}];}if(gcalAllDay(ds)){return[{avail:false,allDayBlock:true,label:'종일 외부 촬영 일정으로 인한 예약 불가',s:9,e:21}];}const hasRestDay=busyEvs.some(e=>e.label==='rest'&&e.dur>=8);if(hasRestDay){return[{avail:false,allDayBlock:true,label:'종일 외부 촬영 일정으로 인한 예약 불가',s:9,e:21}];}const hasFullShoot=busyEvs.some(e=>['outdoor_c','pa_shoot'].includes(e.label)&&e.dur>=8);if(hasFullShoot){return[{avail:false,allDayBlock:true,label:'종일 외부 촬영 일정으로 인한 예약 불가',s:9,e:21}];}const isWeekend=(dow===0);const timeSlots=isWeekend?[[11,13],[14,16],[17,19],[20,22]]:[[14,16],[17,19],[20,22]];const busy=busyEvs.filter(e=>e.time).map(e=>{const[hh,mm]=e.time.split(':').map(Number);return{s:hh+mm/60,e:hh+mm/60+e.dur};});const gcalBusy=gcalTimeBusy(ds);const allBusy=[...busy,...gcalBusy];function isOverlap(s,e){return allBusy.some(r=>!(e<=r.s||s>=r.e));}return timeSlots.map(([s,e])=>{const avail=!isOverlap(s,e);return{avail,allDayBlock:false,label:`${pad(s)}:00~${pad(e)}:00 ${avail?'가능':'불가'}`,s,e};});}
+let selLabel=null;
+function openAdd(ds){ds=ds||fd(curDate);selLabel=null;document.getElementById('pnh').innerHTML='일정 추가<button class="px" onclick="closeP()">×</button>';const chips=Object.entries(LABELS).map(([k,v])=>`<div class="label-chip" style="background:${v.color}" onclick="selLbl('${k}',this)">${v.name}</div>`).join('');document.getElementById('pb').innerHTML=`<div class="fg"><label>날짜</label><input type="date" id="f_d" value="${ds}"></div><div class="fg2"><div class="fg"><label>시작</label><input type="time" id="f_t" value="10:00"></div><div class="fg"><label>시간</label><select id="f_h">${[1,2,3,4,5,6,8].map(v=>`<option value="${v}">${v}시간</option>`).join('')}</select></div></div><div class="fg"><label>라벨 선택</label><div class="label-grid">${chips}</div><input type="hidden" id="f_lbl"></div><div class="fg"><label>고객명</label><input type="text" id="f_n" placeholder="홍길동 (선택)"></div><div class="fg"><label>연락처</label><input type="text" id="f_p" placeholder="010-0000-0000"></div><div class="fg"><label>공개 여부</label><select id="f_pub"><option value="1">공개 (고객 화면에 불가 표시)</option><option value="0">비공개 (내부용)</option></select></div><div class="fg"><label>내부 메모</label><textarea id="f_no" rows="2" style="resize:none" placeholder="고객에게 노출되지 않습니다"></textarea></div><button class="sub-btn" onclick="submitAdd()">추가</button>`;openP();}
+function selLbl(k,el){selLabel=k;document.getElementById('f_lbl').value=k;document.querySelectorAll('.label-chip').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+function submitAdd(){const ds=document.getElementById('f_d').value;const t=document.getElementById('f_t').value;const dur=parseInt(document.getElementById('f_h').value);const label=document.getElementById('f_lbl').value||'studio_f';const name=document.getElementById('f_n').value.trim();const phone=document.getElementById('f_p').value.trim();const note=document.getElementById('f_no').value.trim();const pub=document.getElementById('f_pub').value==='1';const isPrivLabel=['rest','personal'].includes(label);maydlyEvents.push({id:nextId++,label,date:ds,time:t,dur,status:'confirmed',client:name||null,phone:phone||null,note,priv:!pub||isPrivLabel});saveEvents();closeP();toast('✓ 일정이 추가되었습니다');renderBody();}
+function confEv(id){maydlyEvents.find(e=>e.id===id).status='confirmed';saveEvents();toast('✓ 확정되었습니다');buildNav();renderReq();}
+function rejEv(id){maydlyEvents=maydlyEvents.filter(e=>e.id!==id);saveEvents();toast('거절되었습니다');buildNav();renderReq();}
+function delEv(id){if(!confirm('삭제하시겠습니까?'))return;maydlyEvents=maydlyEvents.filter(e=>e.id!==id);saveEvents();closeP();toast('삭제되었습니다');renderBody();}
+function renderReq(){const pend=maydlyEvents.filter(e=>e.status==='pending');const conf=maydlyEvents.filter(e=>e.status==='confirmed'&&e.client);const creqs=clientRequests;let h=`<div class="rq-wrap"><div class="stats"><div class="stat"><div class="sn">${pend.length+creqs.length}</div><div class="sl">대기 중</div></div><div class="stat"><div class="sn">${conf.length}</div><div class="sl">확정</div></div><div class="stat"><div class="sn">${maydlyEvents.length}</div><div class="sl">전체 일정</div></div></div>`;h+=`<div class="sect-label">✅ 확정된 예약</div>`;conf.slice().reverse().slice(0,20).forEach(e=>{const L=LABELS[e.label]||{name:'기타',color:'#999'};h+=`<div class="rcard" style="display:flex;justify-content:space-between;align-items:center"><div><div class="rn">${e.client||L.name}</div><div class="rm">${e.date} ${e.time||''} · ${L.name}</div></div><span class="badge bOK">확정</span></div>`;});h+=`</div>`;document.getElementById('pg-req').innerHTML=h;}
+function acceptClientReq(idx){const r=clientRequests[idx];maydlyEvents.push({id:nextId++,label:'studio_f',date:fd(TODAY),time:'10:00',dur:2,status:'pending',client:r.name,phone:null,note:r.schedule||r.note||'',priv:false});clientRequests.splice(idx,1);saveEvents();saveRequests();toast('일정에 추가되었습니다');buildNav();renderReq();}
+function rejectClientReq(idx){clientRequests.splice(idx,1);saveRequests();toast('삭제되었습니다');buildNav();renderReq();}
+function renderImport(){document.getElementById('pg-import').innerHTML=`<div class="import-wrap"><div class="import-box"><h3>JSON으로 직접 가져오기</h3><p>아래 형식의 JSON 배열을 붙여넣으면 그대로 가져옵니다.</p><textarea id="import-json" placeholder='[{"label":"studio_f","date":"2026-05-10","time":"10:00","dur":2,"client":"김시온"}]'></textarea><button class="sub-btn" style="margin-top:8px" onclick="doJsonImport()">JSON 가져오기</button><div id="import-json-result" class="import-result"></div></div><div class="import-box" style="border-color:var(--R)"><h3 style="color:var(--Rd)">📤 public-data.json 내보내기</h3><p>현재 확정된 일정을 고객 공개용 데이터로 변환해 다운로드합니다.</p><button class="sub-btn" style="background:var(--R)" onclick="exportPublicData()">📥 public-data.json 다운로드</button><div id="export-result" class="import-result"></div></div><div class="import-box" style="border-color:var(--ng)"><h3 style="color:var(--ng)">⚠️ 전체 초기화</h3><p>모든 일정을 삭제하고 새로 시작합니다. 되돌릴 수 없습니다.</p><button class="sub-btn" style="background:var(--ng)" onclick="clearAll()">전체 삭제 후 초기화</button></div></div>`;}
+function doJsonImport(){const txt=document.getElementById('import-json').value.trim();const res=document.getElementById('import-json-result');try{const arr=JSON.parse(txt);if(!Array.isArray(arr))throw new Error('배열 형식이 아닙니다');let added=0;arr.forEach(e=>{if(!e.date||!e.label)return;maydlyEvents.push({id:nextId++,label:e.label||'studio_f',date:e.date,time:e.time||'10:00',dur:parseInt(e.dur)||2,status:e.status||'confirmed',client:e.client||null,phone:e.phone||null,note:e.note||'',priv:e.priv||['rest','personal'].includes(e.label)});added++;});saveEvents();res.className='import-result ok';res.textContent=`✓ ${added}개 일정이 추가되었습니다.`;}catch(e){res.className='import-result err';res.textContent=`JSON 오류: ${e.message}`;}}
+function exportPublicData(){const confirmed=maydlyEvents.filter(e=>e.status==='confirmed');const busyMap={};confirmed.forEach(e=>{if(!busyMap[e.date])busyMap[e.date]={allDay:false,slots:[]};if(['rest','outdoor_c','pa_shoot'].includes(e.label)&&e.dur>=8){busyMap[e.date].allDay=true;}else if(e.time){const[hh,mm]=e.time.split(':').map(Number);busyMap[e.date].slots.push({s:hh+mm/60,e:hh+mm/60+(e.dur||2)});}});const days=[];for(let i=-7;i<90;i++){const d=new Date(TODAY);d.setDate(TODAY.getDate()+i);days.push(fd(d));}const publicSlots={};days.forEach(ds=>{const dow=dowOf(ds);if([1,2,5,6].includes(dow)){publicSlots[ds]={unavailable:true};return;}const busy=busyMap[ds];if(busy?.allDay){publicSlots[ds]={unavailable:true};return;}const bSlots=busy?.slots||[];function isOverlap(s,e){return bSlots.some(r=>!(e<=r.s||s>=r.e));}const timeSlots=dow===0?[[11,13],[14,16],[17,19],[20,22]]:[[14,16],[17,19],[20,22]];const result=timeSlots.map(([s,e])=>({s:`${pad(s)}:00`,e:`${pad(e)}:00`,avail:!isOverlap(s,e)}));publicSlots[ds]={slots:result};});const output={generated:new Date().toISOString(),note:'고객 공개용 — 내부 정보 없음',schedule:publicSlots};const json=JSON.stringify(output,null,2);const blob=new Blob([json],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='public-data.json';a.click();URL.revokeObjectURL(url);const res=document.getElementById('export-result');if(res){res.className='import-result ok';res.textContent='✓ public-data.json 다운로드 완료';}toast('public-data.json 내보내기 완료');}
+function clearAll(){if(!confirm('정말 모든 일정을 삭제하시겠습니까?'))return;maydlyEvents=[];nextId=1;saveEvents();toast('전체 삭제 완료');renderImport();}
+function openP(){document.getElementById('ov').style.display='flex';}
+function closeP(){document.getElementById('ov').style.display='none';selLabel=null;}
+function ovClick(e){if(e.target===document.getElementById('ov'))closeP();}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2800);}
+</script>
 </body>
 </html>
