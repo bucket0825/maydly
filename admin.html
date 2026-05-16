@@ -222,7 +222,7 @@ function showAdminLogin(){
   setTimeout(()=>document.getElementById('adminPw')?.focus(),100);
 }
 function selAdmin(u){selAdminUser=u;document.getElementById('lb-mj').className='login-btn'+(u==='mj'?' sel':'');document.getElementById('lb-sb').className='login-btn'+(u==='sb'?' sel':'');}
-const PW_HASH='5758f9ae2c9d7a7d08a7ac68af73f7b301cd0f8857ca1c7752b8cd153e040d20';
+const PW_HASH='7025055231ee130f53b5e8cc297aa7afd607182be04c84524def9486270cb8a6';
 async function hashPw(pw){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
 async function doLogin(){const pw=document.getElementById('adminPw').value;const h=await hashPw(pw);if(h===PW_HASH){localStorage.setItem('maydly_session','1');closeP();enter();}else{document.getElementById('login-err').style.display='block';}}
 async function syncAndExport(btn){const orig=btn?btn.innerHTML:'';if(btn){btn.innerHTML='⏳ 동기화 중...';btn.disabled=true;}try{await syncGcal();const statusEl=document.getElementById('gcalStatus');if(statusEl)statusEl.textContent=gcalEvents.length>0?`✓ ${gcalEvents.length}개 연동됨`:'동기화 완료';exportPublicData();toast('✓ 동기화 완료 — public-data.json 다운로드됨');}catch(e){toast('동기화 실패: '+e.message);}finally{if(btn){btn.innerHTML=orig;btn.disabled=false;}}}
