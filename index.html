@@ -95,7 +95,7 @@ body{font-family:-apple-system,'Pretendard','Apple SD Gothic Neo',sans-serif;bac
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--sf);border:1px solid var(--bd);color:var(--Rd);padding:10px 22px;border-radius:30px;font-size:11px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.08)}
 .toast.on{opacity:1}
 ::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:.px}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
 </style>
 </head>
 <body>
@@ -287,7 +287,7 @@ async function loadPublicData(){
         const el=document.getElementById('gcalStatus');
         if(el){
           const gen=d.generated?new Date(d.generated).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
-          el.textContent=`일젅 업데이트: ${gen}`;
+          el.textContent=`일정 업데이트: ${gen}`;
         }
       }else{
         // schedule이 비어있으면 데이터 없음으로 처리
@@ -361,21 +361,27 @@ function gcalTimeBusy(ds){
 // public-data.json 로딩 성공 시에만 가능/불가 표시
 // 로딩 실패 또는 데이터 없으면 → 문의 안내 반환 (기본 요일표 절대 사용 안 함)
 function getMaydlySlots(ds){
-const UNAVAIL=[{avail:false,allDayBlock:true,label:'종일 외부 촬영 일정으로 인한 예약 불가'}];
-const dow=parseDS(ds).getDay();
-const isWeekend=(dow===0||dow===6);
-const DEFAULT_SLOTS=isWeekend
-  ?[{avail:true,allDayBlock:false,label:'11:00 ~ 13:00'},{avail:true,allDayBlock:false,label:'14:00 ~ 16:00'},{avail:true,allDayBlock:false,label:'17:00 ~ 19:00'},{avail:true,allDayBlock:false,label:'20:00 ~ 22:00'}]
-  :[{avail:true,allDayBlock:false,label:'14:00 ~ 16:00'},{avail:true,allDayBlock:false,label:'17:00 ~ 19:00'},{avail:true,allDayBlock:false,label:'20:00 ~ 22:00'}];
-if(!dataLoaded) return DEFAULT_SLOTS;
-if(publicSchedule&&publicSchedule[ds]!==undefined){
-const pd=publicSchedule[ds];
-if(pd.unavailable) return UNAVAIL;
-if(pd.slots){
-return pd.slots.map(s=>({avail:s.avail,allDayBlock:false,label:s.s+' ~ '+s.e}));
-}
-}
-return DEFAULT_SLOTS;
+  const UNAVAIL=[{avail:false,allDayBlock:true,label:'종일 외부 촬영 일정으로 인한 예약 불가'}];
+  const NO_DATA=[{avail:false,allDayBlock:false,noData:true,label:'현재 일정 확인이 필요합니다'}];
+
+  // 데이터 미로딩 상태 → 문의 안내만
+  if(!dataLoaded) return NO_DATA;
+
+  // public-data.json에서 해당 날짜 데이터 조회
+  if(publicSchedule&&publicSchedule[ds]!==undefined){
+    const pd=publicSchedule[ds];
+    if(pd.unavailable) return UNAVAIL;
+    if(pd.slots){
+      return pd.slots.map(s=>({
+        avail:s.avail,allDayBlock:false,
+        label:`${s.s} ~ ${s.e}`,
+        s:parseInt(s.s),e:parseInt(s.e)
+      }));
+    }
+  }
+
+  // public-data.json에 해당 날짜 없으면 → 문의 안내 (요일 폴백 없음)
+  return NO_DATA;
 }
 
 // ── 캘린더 상태 ──
@@ -455,8 +461,7 @@ function openDaySlots(ds){
     b=`<div style="text-align:center;padding:20px 16px">
       <div style="font-size:32px;margin-bottom:12px">💬</div>
       <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:6px">현재 일정 확인이 필요합니다</div>
-      <div style="font-size:12px;color:var(--mu);line-height:1.7;margin-bottom:16px">최신 예약 가능 정보는
-<br>카카오로 직접 문의해주셸요</div>
+      <div style="font-size:12px;color:var(--mu);line-height:1.7;margin-bottom:16px">최신 예약 가능 정보는<br>카카오로 직접 문의해주세요</div>
       <a href="${KAKAO_URL}" target="_blank" style="display:block;text-align:center;background:#FEE500;color:#3A1D1D;font-weight:700;font-size:13px;padding:13px;border-radius:10px;text-decoration:none">카카오로 문의하기</a>
     </div>`;
   }else if(slots.length===1&&slots[0].allDayBlock){
