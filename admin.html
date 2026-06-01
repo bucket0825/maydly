@@ -495,9 +495,9 @@ function selAdmin(u){
   document.getElementById('lb-sb').className='login-btn'+(u==='sb'?' sel':'');
 }
 // 비밀번호 해시 (SHA-256). 평문 비밀번호는 코드에 없음.
-// 아래 해시값은 '수빈0232' 의 SHA-256 결과입니다.
+// 아래 해시값은 '0898' 의 SHA-256 결과입니다.
 // 비밀번호 변경 시: https://emn178.github.io/online-tools/sha256.html 에서 새 해시 생성 후 교체
-const PW_HASH='5758f9ae2c9d7a7d08a7ac68af73f7b301cd0f8857ca1c7752b8cd153e040d20';
+const PW_HASH='9923e00231428d5272881c78ed1ffe7340dd73f4792d45ad24b5ab469fcc1a4b';
 async function hashPw(pw){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
